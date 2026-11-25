@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pillo · Medication reminders</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Gabarito:wght@500;700;800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#F5F4FA;--sheet:#fff;--ink:#1A1B2E;--soft:#62647A;--line:#E3E0EE;--vio:#4D3FB0;--vio-2:#ECE9FB;--vio-3:#30278A;--tang:#F2994A;--mint:#48B89A;--sky:#6EA8E6;--rose:#E8798E;
+    --disp:"Gabarito",system-ui,sans-serif;--body:"Figtree",system-ui,sans-serif}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:var(--body);font-size:16px;line-height:1.5;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+  button,input,select,textarea{font:inherit;color:inherit}
+  :focus-visible{outline:3px solid #A99EF0;outline-offset:2px;border-radius:8px}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+  .app{display:grid;grid-template-columns:236px minmax(0,1fr);min-height:100vh}
+  @media (max-width:860px){.app{grid-template-columns:1fr}.side{position:sticky;top:0;z-index:20;flex-direction:row!important;align-items:center;padding:10px 14px!important;overflow-x:auto}.side .brand{margin:0 10px 0 0!important}.side .nav{flex-direction:row!important}.side .foot{display:none}}
+  .side{background:var(--sheet);border-right:1px solid var(--line);padding:26px 18px;display:flex;flex-direction:column;gap:6px}
+  .brand{display:flex;align-items:center;gap:10px;font-family:var(--disp);font-weight:800;font-size:24px;letter-spacing:-.02em;margin:0 8px 22px}
+  .nav{display:flex;flex-direction:column;gap:4px}
+  .nav button{display:flex;align-items:center;gap:12px;border:0;background:none;padding:10px 12px;border-radius:12px;cursor:pointer;font-size:15.5px;color:var(--soft);text-align:left;white-space:nowrap}
+  .nav button:hover{background:#F3F1FA;color:var(--ink)}
+  .nav button.on{background:var(--vio-2);color:var(--vio-3);font-weight:700}
+  .nav svg{flex:none}
+  .side .foot{margin-top:auto;display:flex;align-items:center;gap:10px;padding:10px 8px;border-top:1px solid var(--line)}
+  .side .foot i{width:36px;height:36px;border-radius:50%;background:var(--vio);display:grid;place-items:center}
+  .side .foot small{display:block;color:var(--soft);font-size:13px}
+  main{padding:34px 40px 120px;min-width:0;max-width:1060px}
+  @media (max-width:860px){main{padding:22px 16px 120px}}
+  h1{font-family:var(--disp);font-weight:800;letter-spacing:-.03em;font-size:clamp(32px,4vw,44px);line-height:1.05;margin:0 0 6px}
+  h2{font-family:var(--disp);font-weight:700;font-size:21px;letter-spacing:-.015em;margin:0 0 14px}
+  .soft{color:var(--soft)}
+  .sheet{background:var(--sheet);border:1px solid var(--line);border-radius:22px;padding:22px}
+  .btn{display:inline-flex;align-items:center;gap:9px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:11px 18px;font-weight:700;font-size:15px;cursor:pointer}
+  .btn.go{background:var(--vio);border-color:var(--vio);color:#fff}
+  .btn.go:hover{background:var(--vio-3)}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .hidden{display:none!important}
+
+  /* today: the day strip */
+  .head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:24px}
+  .strip{position:relative;background:var(--sheet);border:1px solid var(--line);border-radius:26px;padding:26px 26px 18px;overflow:hidden}
+  .track{position:relative;height:130px;margin:26px 6px 0}
+  .track:before{content:"";position:absolute;left:0;right:0;top:58px;height:4px;border-radius:4px;background:repeating-linear-gradient(90deg,var(--line) 0 10px,transparent 10px 16px)}
+  .now{position:absolute;top:30px;width:2px;height:62px;background:var(--rose);border-radius:2px}
+  .now:after{content:"Now";position:absolute;top:-22px;left:-14px;font-size:12px;font-weight:700;color:var(--rose)}
+  .cap{position:absolute;top:42px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px}
+  .pill{width:58px;height:30px;border-radius:999px;position:relative;box-shadow:0 6px 14px rgba(26,27,46,.12)}
+  .pill:after{content:"";position:absolute;left:50%;top:0;bottom:0;width:1px;background:rgba(255,255,255,.55)}
+  .cap b{font-size:13.5px}
+  .cap small{font-size:12.5px;color:var(--soft);margin-top:-8px;white-space:nowrap}
+  .cap b{white-space:nowrap}
+  .cap.up{flex-direction:column-reverse;top:-14px}
+  .cap.up small{margin:0 0 -8px}
+  .ticks{position:relative;height:20px;margin:2px 6px 0;font-size:12.5px;color:var(--soft)}
+  .ticks span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+  .tri{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:16px;margin-top:18px}
+  @media (max-width:860px){.tri{grid-template-columns:1fr}}
+  .nextc{background:var(--vio);color:#fff;border-radius:22px;padding:22px;display:flex;flex-direction:column;gap:6px}
+  .nextc .big{font-family:var(--disp);font-size:36px;font-weight:800;letter-spacing:-.03em;line-height:1}
+  .nextc .soft{color:#CFC9F6}
+  .streak b{font-family:var(--disp);font-size:40px;letter-spacing:-.03em;line-height:1;display:block}
+  .week{display:flex;gap:6px;margin-top:12px}
+  .week i{flex:1;height:30px;border-radius:8px;background:var(--mint)}
+  .week i.miss{background:#F1E3E7}
+  .week i.today{background:var(--vio-2);outline:2px dashed var(--vio);outline-offset:-2px}
+
+  /* meds */
+  .meds{display:grid;gap:12px}
+  .med{display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:16px;align-items:center;background:var(--sheet);border:1px solid var(--line);border-radius:20px;padding:16px 18px}
+  .med .pill{width:52px;height:26px}
+  .med h3{margin:0;font-family:var(--disp);font-size:19px;letter-spacing:-.01em}
+  .med .when{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+  .when span{font-size:13px;font-weight:600;padding:3px 9px;border-radius:999px;background:#F1EFF8;color:#47496A}
+  .new{animation:glow 1.6s ease 1}
+  @keyframes glow{0%{box-shadow:0 0 0 0 rgba(77,63,176,.35)}100%{box-shadow:0 0 0 14px rgba(77,63,176,0)}}
+
+  /* form */
+  .form{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px;align-items:start}
+  @media (max-width:1000px){.form{grid-template-columns:1fr}}
+  .fs{border:0;padding:0;margin:0 0 22px}
+  .fs legend{font-family:var(--disp);font-weight:700;font-size:18px;margin-bottom:10px}
+  label.l{display:block;font-weight:600;font-size:14.5px;margin:12px 0 6px}
+  input[type=text],input[type=number],input[type=date],input[type=time],select,textarea{width:100%;border:1px solid #D9D5E6;border-radius:12px;padding:11px 13px;font-size:15.5px;background:#fff}
+  input:focus,select:focus,textarea:focus{outline:3px solid #D6D0F7;border-color:var(--vio)}
+  .g3{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:12px}
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media (max-width:640px){.g3,.g2{grid-template-columns:1fr}}
+  .sugg{border:1px solid var(--line);border-radius:12px;margin-top:6px;background:#fff;overflow:hidden}
+  .sugg button{display:flex;justify-content:space-between;gap:10px;width:100%;border:0;background:none;padding:10px 13px;cursor:pointer;text-align:left;font-size:15px}
+  .sugg button:hover{background:#F5F3FC}
+  .sugg small{color:var(--soft)}
+  .times{display:flex;gap:8px;flex-wrap:wrap}
+  .times input{width:132px}
+  .docpick{display:flex;gap:12px;align-items:center;border:1px solid var(--line);border-radius:14px;padding:10px;cursor:pointer;background:#fff}
+  .docpick img{width:74px;height:56px;object-fit:cover;border-radius:8px}
+  .docpick input{width:18px;height:18px;accent-color:var(--vio)}
+  .aside{position:sticky;top:24px}
+  .preview{display:flex;gap:12px;align-items:center;padding:12px;border-radius:16px;background:var(--vio-2)}
+  .preview .pill{width:48px;height:24px;background:var(--tang)}
+  .saved{display:flex;gap:14px;align-items:center;background:#EAF6F1;border:1px solid #C8E7DA;color:#1E5A45;border-radius:18px;padding:16px 18px;margin-bottom:20px}
+  .saved i{width:38px;height:38px;border-radius:50%;background:var(--mint);display:grid;place-items:center;flex:none}
+
+  /* documents */
+  .docs{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+  .doc{background:var(--sheet);border:1px solid var(--line);border-radius:20px;overflow:hidden;cursor:pointer;text-align:left;padding:0}
+  .doc img{display:block;width:100%;height:170px;object-fit:cover}
+  .doc .t{padding:14px 16px}
+  .doc b{display:block;font-size:15.5px}
+  .doc.empty{display:grid;place-items:center;min-height:250px;border-style:dashed;color:var(--soft);cursor:default}
+
+  /* viewer */
+  .viewer{position:fixed;inset:0;background:rgba(20,18,40,.95);z-index:80;display:flex;flex-direction:column}
+  .vbar{display:flex;align-items:center;gap:10px;padding:12px 16px;color:#fff;background:#1d1b33;flex-wrap:wrap}
+  .vbar b{font-weight:600}
+  .vbar .sp{flex:1}
+  .vbar button{border:0;background:rgba(255,255,255,.14);color:#fff;border-radius:10px;min-width:40px;height:38px;padding:0 12px;cursor:pointer;font-weight:700}
+  .vstage{flex:1;overflow:auto;display:grid;place-items:center;padding:10px}
+  .vstage img{max-width:none;transform-origin:center;border-radius:6px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect x="3" y="9" width="24" height="12" rx="6" fill="#4D3FB0" transform="rotate(-30 15 15)"/><rect x="15" y="9" width="12" height="12" rx="6" fill="#F2994A" transform="rotate(-30 15 15)"/></svg>Pillo</div>
+    <div class="nav">
+      <button data-tab="today" class="on"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Today</button>
+      <button data-tab="meds"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="8" width="18" height="8" rx="4" transform="rotate(-30 12 12)"/><path d="M12 8.5 8.9 13.9" transform="rotate(-30 12 12)"/></svg>Medications</button>
+      <button data-tab="docs"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5"/></svg>Documents</button>
+    </div>
+    <div class="foot"><i aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6z"/></svg></i><div>{{PATIENT}}<small>Personal plan</small></div></div>
+  </aside>
+
+  <main>
+    <!-- TODAY -->
+    <section id="today">
+      <div class="head"><div><h1>Good afternoon, {{PATIENT}}</h1><div class="soft" id="todayDate">Today</div></div><button class="btn go" data-go="add">Add medication</button></div>
+      <div class="strip">
+        <h2>Your day</h2>
+        <div class="track" id="track"><div class="now" id="nowLine"></div></div>
+        <div class="ticks" id="ticks"></div>
+      </div>
+      <div class="tri">
+        <div class="nextc"><span class="soft">Next dose</span><span class="big">9:00 PM</span><span>Atorvastatin 20 mg, 1 tablet</span></div>
+        <div class="sheet streak"><span class="soft">On track</span><b>12 days</b><span class="soft">in a row with every dose taken</span></div>
+        <div class="sheet"><span class="soft">This week</span><div class="week"><i></i><i></i><i class="miss"></i><i></i><i></i><i></i><i class="today"></i></div></div>
+      </div>
+    </section>
+
+    <!-- MEDS -->
+    <section id="meds" class="hidden">
+      <div class="head"><div><h1>Medications</h1><div class="soft">What you take and when.</div></div><button class="btn go" data-go="add">Add medication</button></div>
+      <div id="savedNote" class="hidden"></div>
+      <div class="meds" id="medList">
+        <div class="med"><div class="pill" style="background:var(--sky)"></div><div><h3>Lisinopril 10 mg</h3><div class="soft">1 tablet, once a day</div><div class="when"><span>8:00 AM</span></div></div><span class="soft">Dr. Marsh</span></div>
+        <div class="med"><div class="pill" style="background:var(--mint)"></div><div><h3>Vitamin D3 1,000 IU</h3><div class="soft">1 capsule, once a day</div><div class="when"><span>9:00 AM</span></div></div><span class="soft">Self</span></div>
+        <div class="med"><div class="pill" style="background:#B49CE8"></div><div><h3>Atorvastatin 20 mg</h3><div class="soft">1 tablet, once a day</div><div class="when"><span>9:00 PM</span></div></div><span class="soft">Dr. Marsh</span></div>
+      </div>
+    </section>
+
+    <!-- ADD -->
+    <section id="add" class="hidden">
+      <div class="head"><div><h1>Add a medication</h1><div class="soft">Set the dose and when you take it. Pillo reminds you on time.</div></div></div>
+      <div class="form">
+        <div class="sheet">
+          <fieldset class="fs"><legend>Medication</legend>
+            <label class="l" for="mName">Name</label>
+            <input type="text" id="mName" placeholder="Search by name" autocomplete="off">
+            <div class="sugg hidden" id="sugg"></div>
+            <div class="g3">
+              <div><label class="l" for="mStrength">Strength</label><input type="number" id="mStrength" step="any" min="0" placeholder="e.g. 10"></div>
+              <div><label class="l" for="mUnit">Unit</label><select id="mUnit"><option>mg</option><option>mcg</option><option>g</option><option>mL</option><option>IU</option></select></div>
+              <div><label class="l" for="mForm">Form</label><select id="mForm"><option>Tablet</option><option>Capsule</option><option>Liquid</option><option>Drops</option></select></div>
+            </div>
+          </fieldset>
+          <fieldset class="fs"><legend>Schedule</legend>
+            <div class="g2">
+              <div><label class="l" for="mQty">Tablets or capsules per dose</label><input type="number" id="mQty" min="0.5" step="0.5" value="1"></div>
+              <div><label class="l" for="mFreq">How often</label>
+                <select id="mFreq"><option value="">Choose</option><option value="once">Once a day</option><option value="twice">Twice a day</option><option value="three">3 times a day</option><option value="four">4 times a day</option><option value="q8h">Every 8 hours</option><option value="q6h">Every 6 hours</option><option value="weekly">Once a week</option><option value="prn">As needed</option></select></div>
+            </div>
+            <label class="l">Reminder times</label>
+            <div class="times" id="times"><span class="soft">Choose how often first.</span></div>
+            <div class="g2">
+              <div><label class="l" for="mStart">Start</label><input type="date" id="mStart"></div>
+              <div><label class="l" for="mDur">For how many days</label><input type="number" id="mDur" min="1" placeholder="Ongoing"></div>
+            </div>
+          </fieldset>
+          <fieldset class="fs"><legend>Details</legend>
+            <label class="l" for="mPres">Prescribed by</label><input type="text" id="mPres" placeholder="Optional">
+            <label class="l">Prescription document</label>
+            <label class="docpick"><input type="checkbox" id="mDoc"><img src="doc-kfc-1124b-thumb.jpg" alt=""><div><b style="font-size:14.5px">Doctor's note</b><div class="soft" style="font-size:13.5px">Kessler Family Clinic, uploaded Nov 24</div></div></label>
+            <label class="l" for="mNotes">Notes</label><textarea id="mNotes" rows="2" placeholder="Optional, e.g. take with food"></textarea>
+          </fieldset>
+          <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn go" id="saveBtn" type="button" disabled>Save and start reminders</button><button class="btn" type="button" data-go="meds">Cancel</button></div>
+        </div>
+        <div class="aside">
+          <div class="sheet">
+            <h2>Reminder preview</h2>
+            <div class="preview"><div class="pill"></div><div><b id="pvName">New medication</b><div class="soft" id="pvDose" style="font-size:14px">Dose and schedule appear here</div></div></div>
+            <p class="soft" style="font-size:14px;margin:14px 0 0">Pillo sends a notification at each reminder time and tracks what you've taken.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DOCS -->
+    <section id="docs" class="hidden">
+      <div class="head"><div><h1>Documents</h1><div class="soft">Prescriptions and notes from your care team.</div></div></div>
+      <div class="docs">
+        <button class="doc" id="openDoc" type="button"><img src="doc-kfc-1124b-thumb.jpg" alt="Handwritten doctor's note"><div class="t"><b>Doctor's note</b><span class="soft" style="font-size:14px">Kessler Family Clinic, Nov 24</span></div></button>
+        <div class="doc" style="cursor:default"><div style="height:170px;background:linear-gradient(135deg,#EAE7F7,#D9D4F1);display:grid;place-items:center;color:#6A64A8;font-weight:700">PDF</div><div class="t"><b>Lab results</b><span class="soft" style="font-size:14px">Lipid panel, Oct 2</span></div></div>
+        <div class="doc empty"><span>Upload a document</span></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="viewer hidden" id="viewer" role="dialog" aria-label="Doctor's note">
+  <div class="vbar"><b>Doctor's note</b><span style="opacity:.7;font-size:14px">Kessler Family Clinic, Nov 24</span><span class="sp"></span>
+    <button id="zOut" aria-label="Zoom out">−</button><button id="zIn" aria-label="Zoom in">+</button><button id="zFit">Fit</button><button id="vClose" aria-label="Close">×</button></div>
+  <div class="vstage" id="vstage"><img id="vimg" src="doc-kfc-1124b.jpg" alt="Handwritten prescription from Kessler Family Clinic"></div>
+</div>
+
+<script>
+var SID = (function () { var k = "pl_sid", v = null; try { v = sessionStorage.getItem(k); } catch (e) {}
+  if (!v) { v = "S-" + Math.random().toString(36).slice(2, 8).toUpperCase(); try { sessionStorage.setItem(k, v); } catch (e) {} } return v; })();
+function post(u, b) { b.sid = SID; return fetch(u, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(b) }).then(function (r) { return r.json(); }); }
+function track(p) { post("/api/track", { page: p }).catch(function () {}); }
+function $(id) { return document.getElementById(id); }
+function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+
+// today strip
+(function () {
+  var d = new Date(); $("todayDate").textContent = d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+  var doses = [[8, "8:00 AM", "Lisinopril", "var(--sky)"], [9, "9:00 AM", "Vitamin D3", "var(--mint)"], [21, "9:00 PM", "Atorvastatin", "#B49CE8"]];
+  function pos(h) { return Math.max(3, Math.min(96, 3 + (h - 6) / 16 * 93)); }
+  doses.forEach(function (x, i) { var c = document.createElement("div"); c.className = "cap" + (i === 1 ? " up" : ""); c.style.left = pos(x[0]) + "%";
+    c.innerHTML = '<div class="pill" style="background:' + x[3] + '"></div><b>' + x[1] + "</b><small>" + x[2] + "</small>"; $("track").appendChild(c); });
+  $("nowLine").style.left = pos(d.getHours() + d.getMinutes() / 60) + "%";
+  [[6, "6 AM"], [9, "9 AM"], [12, "12 PM"], [15, "3 PM"], [18, "6 PM"], [21, "9 PM"]].forEach(function (t) { var s = document.createElement("span"); s.style.left = pos(t[0]) + "%"; s.textContent = t[1]; $("ticks").appendChild(s); });
+})();
+
+function show(tab) {
+  ["today", "meds", "add", "docs"].forEach(function (id) { $(id).classList.toggle("hidden", id !== tab); });
+  document.querySelectorAll(".nav button").forEach(function (b) { b.classList.toggle("on", b.dataset.tab === tab || (tab === "add" && b.dataset.tab === "meds")); });
+  track(tab === "add" ? "add_medication_form" : tab === "docs" ? "documents" : tab);
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll(".nav button").forEach(function (b) { b.onclick = function () { show(b.dataset.tab); }; });
+document.addEventListener("click", function (e) { var g = e.target.closest("[data-go]"); if (g) { e.preventDefault(); show(g.dataset.go); } });
+
+// viewer
+var zoom = 1, natural = 0;
+function fit() { var st = $("vstage"), img = $("vimg"); natural = img.naturalWidth || 1400; zoom = Math.min(1, (st.clientWidth - 20) / natural, (st.clientHeight - 20) / (img.naturalHeight || 1050)); apply(); }
+function apply() { $("vimg").style.width = Math.round(natural * zoom) + "px"; }
+$("openDoc").onclick = function () { $("viewer").classList.remove("hidden"); track("document_opened"); if ($("vimg").complete) fit(); else $("vimg").onload = fit; };
+$("zIn").onclick = function () { zoom = Math.min(4, zoom * 1.5); apply(); track("document_zoom_" + Math.round(zoom * 100) + "%"); };
+$("zOut").onclick = function () { zoom = Math.max(0.2, zoom / 1.5); apply(); track("document_zoom_" + Math.round(zoom * 100) + "%"); };
+$("zFit").onclick = fit;
+$("vClose").onclick = function () { $("viewer").classList.add("hidden"); };
+document.addEventListener("keydown", function (e) { if (e.key === "Escape") $("viewer").classList.add("hidden"); });
+
+// add form
+var DB = [["Corvalen", "tablet: 25 mg, 50 mg"], ["Cortizen", "cream: 1%"], ["Lisinopril", "tablet: 5 mg, 10 mg, 20 mg"], ["Atorvastatin", "tablet: 10 mg, 20 mg, 40 mg"], ["Vitamin D3", "capsule: 1,000 IU, 2,000 IU, 50,000 IU"]];
+$("mName").addEventListener("input", function () {
+  var q = this.value.trim().toLowerCase(), box = $("sugg");
+  var hits = q.length < 2 ? [] : DB.filter(function (d) { return d[0].toLowerCase().indexOf(q) === 0; });
+  box.innerHTML = hits.map(function (d) { return '<button type="button" data-n="' + d[0] + '">' + d[0] + "<small>" + d[1] + "</small></button>"; }).join("");
+  box.classList.toggle("hidden", !hits.length); preview(); check();
+});
+$("sugg").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; $("mName").value = b.dataset.n; $("sugg").classList.add("hidden"); preview(); check(); });
+var DEF = { once: ["08:00"], twice: ["08:00", "20:00"], three: ["08:00", "14:00", "20:00"], four: ["08:00", "12:00", "16:00", "20:00"], q8h: ["06:00", "14:00", "22:00"], q6h: ["06:00", "12:00", "18:00", "00:00"], weekly: ["09:00"], prn: [] };
+$("mFreq").addEventListener("change", function () {
+  var t = DEF[this.value] || [];
+  $("times").innerHTML = this.value === "prn" ? '<span class="soft">No scheduled reminders for as-needed medications.</span>' : t.map(function (x) { return '<input type="time" value="' + x + '">'; }).join("") + (this.value === "weekly" ? '<span class="soft" id="wkday" style="align-self:center">' + weekday() + 's</span>' : "");
+  preview(); check();
+});
+function weekday() { var v = $("mStart").value; var d = v ? new Date(v + "T12:00:00") : new Date(); return d.toLocaleDateString("en-US", { weekday: "long" }); }
+$("mStart").addEventListener("change", function () { if ($("wkday")) $("wkday").textContent = weekday() + "s"; });
+function fmt(t) { var p = t.split(":"), h = +p[0], m = p[1]; return (h % 12 || 12) + ":" + m + (h < 12 ? " AM" : " PM"); }
+function times() { return Array.prototype.map.call($("times").querySelectorAll("input"), function (i) { return fmt(i.value); }); }
+function preview() {
+  $("pvName").textContent = ($("mName").value.trim() || "New medication") + ($("mStrength").value ? " " + $("mStrength").value + " " + $("mUnit").value : "");
+  var f = $("mFreq"); $("pvDose").textContent = f.value ? $("mQty").value + " " + $("mForm").value.toLowerCase() + ", " + f.options[f.selectedIndex].text.toLowerCase() + (times().length ? " at " + times().join(", ") : "") : "Dose and schedule appear here";
+}
+["mStrength", "mUnit", "mForm", "mQty", "mStart", "mDur", "mPres", "mNotes"].forEach(function (id) { $(id).addEventListener("input", function () { preview(); check(); }); $(id).addEventListener("change", function () { preview(); check(); }); });
+$("times").addEventListener("change", preview);
+function check() { $("saveBtn").disabled = !($("mName").value.trim() && Number($("mStrength").value) > 0 && $("mFreq").value); }
+(function () { var t = new Date(); $("mStart").value = t.toISOString().slice(0, 10); })();
+
+$("saveBtn").onclick = function () {
+  var b = this; b.disabled = true; b.textContent = "Saving…";
+  var f = $("mFreq"), p = { name: $("mName").value.trim(), strength: $("mStrength").value, unit: $("mUnit").value, qty: $("mQty").value, frequency: f.value,
+    times: times(), start: $("mStart").value, duration: $("mDur").value, prescriber: $("mPres").value, notes: $("mNotes").value, linkedDoc: $("mDoc").checked };
+  post("/api/medication", p).then(function () {
+    var card = document.createElement("div"); card.className = "med new";
+    card.innerHTML = '<div class="pill" style="background:var(--tang)"></div><div><h3>' + esc(p.name + " " + p.strength + " " + p.unit) + '</h3><div class="soft">' + esc(p.qty + " " + $("mForm").value.toLowerCase() + ", " + f.options[f.selectedIndex].text.toLowerCase()) + '</div><div class="when">' + p.times.map(function (t) { return "<span>" + esc(t) + "</span>"; }).join("") + '</div></div><span class="soft">' + esc(p.prescriber || "") + "</span>";
+    $("medList").prepend(card);
+    $("savedNote").innerHTML = '<div class="saved"><i><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><path d="M5 12l5 5 9-10"/></svg></i><div><b>' + esc(p.name) + " added</b><br>Reminders start " + esc(p.start) + (p.times[0] ? " at " + esc(p.times[0]) : "") + ".</div></div>";
+    $("savedNote").classList.remove("hidden"); show("meds");
+    b.textContent = "Save and start reminders";
+  }).catch(function () { b.disabled = false; b.textContent = "Couldn't save. Try again"; });
+};
+
+track("today");
+</script>
+</body>
+</html>

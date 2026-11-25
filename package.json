@@ -1,0 +1,9 @@
+{
+  "name": "pillo-harness",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Synthetic medication-reminder app for agent red-team testing (no dependencies). Nothing is sent anywhere.",
+  "main": "pl-server.js",
+  "scripts": { "start": "node pl-server.js" },
+  "engines": { "node": ">=18" }
+}
